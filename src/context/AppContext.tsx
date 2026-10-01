@@ -34,6 +34,17 @@ import {
   initialComments,
   initialChatMessages
 } from '../data/initialData';
+import {
+  isSupabaseConfigured,
+  fetchAllFromSupabase,
+  syncDonationToSupabase,
+  syncExpenseToSupabase,
+  syncMemberToSupabase,
+  syncChatMessageToSupabase,
+  syncNoticeToSupabase,
+  syncActivityPostToSupabase,
+  syncOrgConfigToSupabase
+} from '../lib/supabase';
 
 interface Toast {
   id: string;
@@ -308,6 +319,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [language]);
 
+  // Initial fetch from Supabase if configured
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      fetchAllFromSupabase().then((data) => {
+        if (data) {
+          if (data.members) setMembers(data.members as any);
+          if (data.donations) setDonations(data.donations as any);
+          if (data.expenses) setExpenses(data.expenses as any);
+          if (data.campaigns) setCampaigns(data.campaigns as any);
+          if (data.fundSectors) setFundSectors(data.fundSectors as any);
+          if (data.notices) setNotices(data.notices as any);
+          if (data.activityPosts) setActivities(data.activityPosts as any);
+          if (data.comments) setComments(data.comments as any);
+          if (data.bloodDonors) setBloodDonors(data.bloodDonors as any);
+          if (data.gallery) setGallery(data.gallery as any);
+          if (data.reliefLocations) setReliefLocations(data.reliefLocations as any);
+          if (data.chatMessages) setChatMessages(data.chatMessages as any);
+          if (data.orgConfig) setOrgConfig(data.orgConfig as any);
+          showToast('Supabase ক্লাউড ডাটাবেজ সফলভাবে সংযুক্ত হয়েছে', 'info');
+        }
+      });
+    }
+  }, []);
+
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     saveToStorage('msf_language', lang);
@@ -407,12 +442,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         '2026-09': 'paid'
       },
       tasks: [],
-      assignedTools: ['ফিল্ড কাজ আপডেট', 'রক্তদান সেবা']
+      assignedTools: ['ফিল্ড কাজ আপডেট', 'রক্তদান সেবা'],
+      attendance: {
+        totalDaysPresent: 0,
+        totalEventsHeld: 0,
+        history: []
+      }
     };
 
     const updated = [newMember, ...members];
     setMembers(updated);
     saveToStorage('msf_members', updated);
+
+    // Sync with Supabase cloud if connected
+    syncMemberToSupabase(newMember);
 
     // Auto-add to blood donors
     const newDonor: BloodDonor = {
@@ -484,12 +527,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         '2026-09': 'paid'
       },
       tasks: [],
-      assignedTools: data.isAdmin ? ['সকল অ্যাডমিন টুলস'] : ['অগ্রগতি আপডেট']
+      assignedTools: data.isAdmin ? ['সকল অ্যাডমিন টুলস'] : ['অগ্রগতি আপডেট'],
+      attendance: {
+        totalDaysPresent: 0,
+        totalEventsHeld: 0,
+        history: []
+      }
     };
 
     const updated = [newMember, ...members];
     setMembers(updated);
     saveToStorage('msf_members', updated);
+
+    // Sync with Supabase cloud if connected
+    syncMemberToSupabase(newMember);
 
     showToast(`সদস্য "${data.name}" সফলভাবে যুক্ত হয়েছেন। সিক্রেট কোড: ${secretCode}`, 'success');
     return newMember;
@@ -736,6 +787,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'ledger'
     );
 
+    // Sync with Supabase cloud if connected
+    syncDonationToSupabase(newDonation);
+
     return newDonation;
   };
 
@@ -751,6 +805,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [newExpense, ...expenses];
     setExpenses(updated);
     saveToStorage('msf_expenses', updated);
+
+    // Sync with Supabase cloud if connected
+    syncExpenseToSupabase(newExpense);
 
     // Update sector expense
     if (expenseData.sectorId) {
@@ -808,6 +865,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'task',
       'activities'
     );
+
+    // Sync with Supabase cloud if connected
+    syncActivityPostToSupabase(newPost);
 
     showToast('কার্যক্রমের স্বচ্ছ প্রতিবেদন সফলভাবে প্রকাশিত হয়েছে', 'success');
   };
@@ -876,6 +936,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setChatMessages(updated);
     saveToStorage('msf_chat_messages', updated);
 
+    // Sync with Supabase cloud if connected
+    syncChatMessageToSupabase(newMsg);
+
     // If community chat, notify
     if (recipientId === 'community') {
       addNotification(
@@ -925,6 +988,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updated = [newNotice, ...notices];
     setNotices(updated);
     saveToStorage('msf_notices', updated);
+
+    // Sync with Supabase cloud if connected
+    syncNoticeToSupabase(newNotice);
 
     addNotification(
       `নোটিশ: ${newNotice.title}`,
