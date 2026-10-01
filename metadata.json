@@ -1,0 +1,6 @@
+{
+  "name": "মানবসেবা ফাউন্ডেশন (Manob Sheba Foundation)",
+  "description": "মানবসেবা ফাউন্ডেশনের অনলাইন প্ল্যাটফর্ম - স্বচ্ছ অনুদান, স্বেচ্ছাসেবক পোর্টাল, রক্তদান ডিরেক্টরি, মাসিক ফি হিসাব ও ত্রাণ কার্যক্রম ট্র্যাকিং।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

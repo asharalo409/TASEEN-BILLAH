@@ -1,0 +1,17 @@
+{
+  "name": "মানবসেবা ফাউন্ডেশন",
+  "short_name": "মানবসেবা",
+  "description": "মানবসেবা ফাউন্ডেশনের অনলাইন প্ল্যাটফর্ম - আর্তমানবতার সেবায় নিবেদিত",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#064e3b",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
